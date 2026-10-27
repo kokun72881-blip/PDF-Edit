@@ -1,0 +1,2267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Utility V6.5</title>
+<style>
+@font-face {
+  font-family: "Noto Sans TC";
+  src: url("./fonts/NotoSansTC-Regular.ttf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --blue: #1769e0;
+  --blue-dark: #0f56bf;
+  --ink: #172033;
+  --muted: #667085;
+  --line: #dfe5ec;
+  --bg: #f3f6fa;
+  --card: #fff;
+  --green: #07865f;
+  --green-dark: #066e4d;
+  --danger: #b42318;
+  --shadow: 0 3px 12px rgba(15, 23, 42, .06);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.45;
+}
+header {
+  background: #fff;
+  padding: 20px 28px 18px;
+  border-bottom: 1px solid var(--line);
+  border-top: 4px solid var(--blue);
+}
+h1 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
+h2 { margin: 0 0 12px; font-size: 18px; }
+.edition { margin-top: 4px; color: var(--blue); font-size: 13px; font-weight: 700; }
+.sub { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+.wrap { max-width: 1240px; margin: 20px auto; padding: 0 16px 32px; }
+.dep { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+.pill { font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; background: #ecfdf3; color: #027a48; }
+.pill.bad { background: #fff0f0; color: var(--danger); }
+.dep-help { flex-basis: 100%; margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.offline-head { flex-basis: 100%; font-weight: 800; }
+.offline-head.ok { color: #027a48; }
+.offline-head.bad { color: var(--danger); }
+.tabs, .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tabs { margin-bottom: 4px; }
+.tab, button {
+  padding: 10px 14px;
+  min-height: 40px;
+  border: 1px solid #d8e0e8;
+  background: #fff;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--blue); }
+.tab.on, .primary { background: var(--blue) !important; color: #fff; border-color: var(--blue) !important; }
+.primary:hover:not(:disabled) { background: var(--blue-dark) !important; }
+.green { background: var(--green); color: #fff; border-color: var(--green); }
+.green:hover:not(:disabled) { background: var(--green-dark); }
+.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button:focus-visible, .tab:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.panel { display: none; }
+.panel.on { display: block; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 14px 0;
+  box-shadow: var(--shadow);
+}
+.drop {
+  border: 2px dashed #a9c7ef;
+  border-radius: 14px;
+  padding: 26px 16px;
+  text-align: center;
+  background: #f5f9ff;
+  color: #175ca8;
+  cursor: pointer;
+}
+.drop:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.drop.over { background: #e9fff5; border-color: #13a36f; }
+.file {
+  padding: 10px 12px;
+  border: 1px solid #e1e7ee;
+  border-radius: 10px;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  background: #fff;
+}
+.group { display: grid; grid-template-columns: 190px 1fr 44px; gap: 8px; margin: 8px 0; }
+.status {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f6f8fa;
+  color: #475467;
+  white-space: pre-wrap;
+}
+.error { background: #fff0f0; color: var(--danger); }
+.success { background: #ecfdf3; color: #027a48; }
+input, textarea, select {
+  font: inherit;
+  border: 1px solid #ccd5df;
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: #fff;
+  color: var(--ink);
+}
+input[type="color"] {
+  width: 100%;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+textarea { width: 100%; resize: vertical; }
+.muted { color: var(--muted); font-size: 13px; font-weight: 400; }
+.note { padding: 10px 12px; border-radius: 10px; background: #fff8e6; color: #8a5b00; font-size: 13px; }
+.outgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.out { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: #fafcff; display: flex; flex-direction: column; gap: 8px; }
+.out button, .out select { width: 100%; }
+.editor { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 14px; align-items: start; }
+.side { margin: 14px 0; display: flex; flex-direction: column; gap: 12px; }
+.side h2 { margin: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: #344054; }
+.field input, .field select, .field textarea { font-weight: 400; }
+.size-row { display: flex; justify-content: space-between; align-items: baseline; }
+#sizeLab { color: var(--blue); font-size: 18px; }
+input[type="range"] { width: 100%; accent-color: var(--blue); padding: 0; }
+.seg { display: flex; border: 1px solid #d8e0e8; border-radius: 10px; overflow: hidden; }
+.seg button { flex: 1; border: 0; border-radius: 0; border-right: 1px solid #d8e0e8; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+.canvasWrap {
+  background: #334155;
+  border-radius: 12px;
+  overflow: auto;
+  min-height: 640px;
+  max-height: calc(100vh - 190px);
+  padding: 18px;
+  position: sticky;
+  top: 12px;
+}
+.canvas-empty { color: #e2e8f0; text-align: center; padding: 80px 20px; }
+.canvasBox { position: relative; display: inline-block; line-height: 0; }
+.canvasBox canvas { display: block; background: #fff; }
+#overlayLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  line-height: normal;
+}
+.text-anchor { position: absolute; width: 0; height: 0; overflow: visible; }
+.text-obj {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: center center;
+  white-space: pre;
+  line-height: 1;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  text-rendering: geometricPrecision;
+  cursor: grab;
+  user-select: none;
+  color: #d71920;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+}
+.text-obj.dragging { cursor: grabbing; }
+.text-obj.selected {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+}
+.text-body { display: inline-block; line-height: 1; }
+.text-del {
+  position: absolute;
+  transform: translate(-100%, -100%);
+  display: none;
+  z-index: 4;
+  padding: 4px 8px;
+  min-height: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  border-radius: 8px;
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+}
+.text-anchor.selected .text-del { display: inline-flex; }
+.obj-list { display: flex; flex-direction: column; gap: 6px; }
+.obj-item {
+  text-align: left;
+  font-weight: 600;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.obj-item.on { background: #e8f1fc; border-color: var(--blue); color: var(--blue-dark); }
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 16px;
+}
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  width: min(460px, 100%);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, .22);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.modal-card h3 { margin: 0; font-size: 18px; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 900px) {
+  .editor, .outgrid, .group { grid-template-columns: 1fr; }
+  .canvasWrap { position: static; max-height: none; min-height: 420px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>PDF Utility V6.5</h1>
+  <div class="edition">TRUE OFFLINE PROFESSIONAL EDITION</div>
+  <p class="sub">Split | Merge | Add Text | JPG | Excel Valuation Reconstruction</p>
+</header>
+<div class="wrap">
+  <section id="depCheck" class="dep" aria-live="polite"></section>
+  <div class="row" style="margin-bottom:8px">
+    <button type="button" id="diagBtn">Run Offline Diagnostics</button>
+  </div>
+  <div id="diagOut" class="status" hidden></div>
+  <div class="tabs">
+    <button type="button" class="tab on" data-tab="split">Split</button>
+    <button type="button" class="tab" data-tab="merge">Merge</button>
+    <button type="button" class="tab" data-tab="edit">Add Text</button>
+    <button type="button" class="tab" data-tab="convert">Convert</button>
+  </div>
+
+  <section id="split" class="panel on">
+    <div class="card">
+      <h2>Split PDF</h2>
+      <input id="sIn" type="file" accept=".pdf,application/pdf" hidden>
+      <div id="sDrop" class="drop" role="button" tabindex="0"><b>Drop a PDF here</b><div class="muted">or click to browse</div></div>
+      <div id="sInfo"></div>
+      <p class="muted">Page ranges, one PDF per row. Examples: 1-3, 5, 7-9,12.</p>
+      <div id="groups"></div>
+      <div class="row">
+        <button type="button" id="addG">+ Add output</button>
+        <button type="button" id="splitGo" class="primary" disabled>Split and download</button>
+      </div>
+      <div id="sStatus" class="status">Waiting for a PDF.</div>
+    </div>
+  </section>
+
+  <section id="merge" class="panel">
+    <div class="card">
+      <h2>Merge PDFs</h2>
+      <input id="mIn" type="file" accept=".pdf,application/pdf" multiple hidden>
+      <div id="mDrop" class="drop" role="button" tabindex="0"><b>Drop PDFs here</b><div class="muted">or click to browse. Order is top to bottom.</div></div>
+      <div id="mList"></div>
+      <div class="row" style="margin-top:12px">
+        <input id="mName" value="merged.pdf" aria-label="Merged file name">
+        <button type="button" id="mClear">Clear</button>
+        <button type="button" id="mergeGo" class="green" disabled>Merge and download</button>
+      </div>
+      <div id="mStatus" class="status">Waiting for PDFs.</div>
+    </div>
+  </section>
+
+  <section id="edit" class="panel">
+    <div class="editor">
+      <div class="card side">
+        <h2>Add Text</h2>
+        <input id="eIn" type="file" accept=".pdf,application/pdf" hidden>
+        <div id="eDrop" class="drop" role="button" tabindex="0"><b>Drop a PDF here</b><div class="muted">or click to browse</div></div>
+        <div id="eInfo"></div>
+        <button type="button" id="addText" class="primary" disabled>+ Add Text</button>
+        <div class="row">
+          <button type="button" id="prev" disabled>Previous</button>
+          <span id="pageLab">—</span>
+          <button type="button" id="next" disabled>Next</button>
+        </div>
+        <label class="field">Font size
+          <span class="size-row"><span class="muted">Live</span><b id="sizeLab">16</b></span>
+          <input id="fontSize" type="range" min="0" max="11" step="1" value="4" aria-valuemin="8" aria-valuemax="48" aria-valuenow="16">
+        </label>
+        <div class="field">Rotation
+          <div class="seg" id="rotCtrl">
+            <button type="button" data-rot="0" aria-pressed="true">0°</button>
+            <button type="button" data-rot="90" aria-pressed="false">90°</button>
+            <button type="button" data-rot="180" aria-pressed="false">180°</button>
+            <button type="button" data-rot="270" aria-pressed="false">270°</button>
+          </div>
+        </div>
+        <label class="field">Text colour
+          <input id="color" type="color" value="#d71920">
+        </label>
+        <div class="note">Text appears on the preview immediately. Drag it into place. Double-click to edit. English, Traditional Chinese, and mixed text use Noto Sans TC, then Microsoft JhengHei, then sans-serif. Examples: Market Value, Development Cost, Residential Area, 市場價值, 住宅樓面面積, 商業部分.</div>
+        <div id="objMeta" class="muted">No text yet</div>
+        <div id="objList" class="obj-list"></div>
+        <label class="field">Export file
+          <input id="eName" value="annotated.pdf">
+        </label>
+        <button type="button" id="editGo" class="green" disabled>Export PDF</button>
+        <div id="eStatus" class="status">Waiting for a PDF.</div>
+      </div>
+      <div class="canvasWrap" id="canvasWrap">
+        <div id="canvasEmpty" class="canvas-empty">Load a PDF, then use + Add Text. Words show on the page at once.</div>
+        <div id="canvasBox" class="canvasBox" hidden>
+          <canvas id="pdfCanvas"></canvas>
+          <div id="overlayLayer"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="convert" class="panel">
+    <div class="card">
+      <h2>PDF Converter</h2>
+      <input id="cIn" type="file" accept=".pdf,application/pdf" hidden>
+      <div id="cDrop" class="drop" role="button" tabindex="0"><b>Drop a PDF here</b><div class="muted">JPG or Excel</div></div>
+      <div id="cInfo"></div>
+      <label class="field" style="margin-top:12px">Pages (empty = all)
+        <input id="cPages" placeholder="1-3,5">
+      </label>
+      <div class="outgrid" style="margin-top:14px">
+        <div class="out">
+          <b>PDF → JPG</b>
+          <p class="muted">One JPG per page.</p>
+          <select id="jpgQ" aria-label="JPG quality">
+            <option value="0.92">High</option>
+            <option value="0.8">Medium</option>
+            <option value="0.65">Small</option>
+          </select>
+          <button type="button" id="jpgGo" class="primary" disabled>Download JPG</button>
+        </div>
+        <div class="out">
+          <b>PDF → Excel</b>
+          <p class="muted">Smart Layout uses X/Y position, gaps, repeated columns, and number types.</p>
+          <select id="excelMode" aria-label="Excel mode">
+            <option value="valuation5">V5 Valuation Reconstruction (recommended)</option>
+            <option value="smart">Smart Layout</option>
+            <option value="table">Table Extraction</option>
+            <option value="raw">Raw Extraction</option>
+          </select>
+          <button type="button" id="excelGo" class="primary" disabled>Download Excel</button>
+        </div>
+      </div>
+      <div class="note" style="margin-top:12px"><b>Valuation Reconstruction:</b> Particulars, Development Schedule, Residual Valuation, Development Costs, and Notes each keep the V5 column template. Value, unit, and remark stay split, blank rows stay between sections, and columns B–I keep the working-paper widths.</div>
+      <div id="cStatus" class="status">Waiting for a PDF.</div>
+    </div>
+  </section>
+</div>
+
+<div id="modal" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!--
+  Library loading lives only in this section.
+  Migration: earlier builds fetched these files from the network.
+  This edition reads ./libs and ./fonts beside this file.
+-->
+<script src="./libs/pdf-lib.min.js"></script>
+<script src="./libs/fontkit.umd.min.js"></script>
+<script src="./libs/pdf.min.js"></script>
+<script src="./libs/xlsx.full.min.js"></script>
+<script>
+window.PDF_TOOL_LIBS = {
+  pdfWorker: "./libs/pdf.worker.min.js"
+};
+</script>
+<script>
+(() => {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+  const FONT_SIZES = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
+  const FONT_FAMILY = '"Noto Sans TC", "Microsoft JhengHei", sans-serif';
+
+  function withFontkit(doc) {
+    if (doc && window.fontkit && typeof doc.registerFontkit === "function") doc.registerFontkit(window.fontkit);
+    return doc;
+  }
+
+  /* ============================================================
+     UI module
+     ============================================================ */
+  function setStatus(id, message, kind) {
+    const node = $(id);
+    node.textContent = message;
+    node.className = "status" + (kind ? " " + kind : "");
+  }
+
+  const LIB_FILES = {
+    "pdf-lib": "pdf-lib.min.js",
+    "pdf.js": "pdf.min.js",
+    "xlsx": "xlsx.full.min.js",
+    "Worker": "pdf.worker.min.js"
+  };
+
+  function libraryFlags() {
+    return {
+      "pdf-lib": !!(window.PDFLib && window.PDFLib.PDFDocument),
+      "pdf.js": !!(window.pdfjsLib && window.pdfjsLib.getDocument),
+      "xlsx": !!(window.XLSX && window.XLSX.utils)
+    };
+  }
+
+  async function probeWorker() {
+    if (!(window.pdfjsLib && window.pdfjsLib.getDocument)) return false;
+    if (window.PDF_TOOL_LIBS && window.PDF_TOOL_LIBS.pdfWorker) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = window.PDF_TOOL_LIBS.pdfWorker;
+    }
+    try {
+      let data;
+      if (window.PDFLib && window.PDFLib.PDFDocument) {
+        const sample = await PDFLib.PDFDocument.create();
+        sample.addPage([24, 24]);
+        data = await sample.save();
+      } else return false;
+      const task = pdfjsLib.getDocument({ data });
+      const pdf = await task.promise;
+      const pages = pdf.numPages;
+      if (pdf.destroy) await pdf.destroy();
+      return pages === 1;
+    } catch (ignore) {
+      return false;
+    }
+  }
+
+  function renderOfflineStatus(report) {
+    const host = $("depCheck");
+    host.replaceChildren();
+    const missing = [];
+    Object.keys(LIB_FILES).forEach((name) => {
+      if (!report[name]) missing.push(LIB_FILES[name]);
+    });
+    const head = document.createElement("div");
+    head.className = "offline-head " + (missing.length ? "bad" : "ok");
+    head.textContent = missing.length ? "Missing Library" : "Offline Mode Active";
+    host.appendChild(head);
+    Object.keys(LIB_FILES).forEach((name) => {
+      const pill = document.createElement("span");
+      const ok = !!report[name];
+      pill.className = "pill" + (ok ? "" : " bad");
+      pill.textContent = ok ? name + " Loaded" : "Missing " + LIB_FILES[name];
+      host.appendChild(pill);
+    });
+    const help = document.createElement("p");
+    help.className = "dep-help";
+    help.textContent = missing.length
+      ? "Missing library: " + missing.join(", ") + ". Put those files in the libs folder beside this page, then reload."
+      : "Libraries are read from the libs folder beside this page.";
+    host.appendChild(help);
+  }
+
+  async function collectReport() {
+    const flags = libraryFlags();
+    const worker = flags["pdf.js"] ? await probeWorker() : false;
+    return {
+      "pdf-lib": flags["pdf-lib"],
+      "pdf.js": flags["pdf.js"],
+      "xlsx": flags.xlsx,
+      "Worker": worker,
+      ok: flags["pdf-lib"] && flags["pdf.js"] && flags.xlsx && worker
+    };
+  }
+
+  async function refreshOfflineStatus() {
+    renderOfflineStatus(await collectReport());
+  }
+
+  async function runDiagnostics() {
+    const box = $("diagOut");
+    box.hidden = false;
+    box.className = "status";
+    box.textContent = "Running offline diagnostics…";
+    const report = await collectReport();
+    renderOfflineStatus(report);
+    const lines = [];
+    lines.push(report.ok ? "Offline Mode Active" : "Missing Library");
+    lines.push("pdf-lib " + (report["pdf-lib"] ? "Loaded" : "Missing: pdf-lib.min.js"));
+    lines.push("pdf.js " + (report["pdf.js"] ? "Loaded" : "Missing: pdf.min.js"));
+    lines.push("xlsx " + (report.xlsx ? "Loaded" : "Missing: xlsx.full.min.js"));
+    lines.push("Worker " + (report.Worker ? "Loaded" : "Missing: pdf.worker.min.js"));
+    const fontBytes = await loadFontBytes();
+    if (!window.fontkit) {
+      lines.push("Missing fontkit.umd.min.js");
+      lines.push("Compatibility Mode");
+    } else if (fontBytes) {
+      try {
+        const sample = await PDFLib.PDFDocument.create();
+        withFontkit(sample);
+        await sample.embedFont(fontBytes, { subset: true });
+        lines.push("fontkit Loaded");
+        lines.push("Embedded Font Mode");
+      } catch (ignore) {
+        lines.push("fontkit Loaded");
+        lines.push("Compatibility Mode");
+      }
+    } else {
+      lines.push("fontkit Loaded");
+      lines.push("Compatibility Mode");
+    }
+    box.textContent = lines.join("\n");
+    box.className = "status " + (report.ok ? "success" : "error");
+  }
+
+  function requireLib(name) {
+    if (name === "pdf-lib" && !(window.PDFLib && window.PDFLib.PDFDocument)) {
+      throw new Error("pdf-lib is missing. Split, Merge, and Export PDF need it. See the dependency check.");
+    }
+    if (name === "pdf.js" && !(window.pdfjsLib && window.pdfjsLib.getDocument)) {
+      throw new Error("pdf.js is missing. Preview, JPG, and Excel need it. See the dependency check.");
+    }
+    if (name === "xlsx" && !(window.XLSX && window.XLSX.utils)) {
+      throw new Error("xlsx is missing. Excel export needs it. See the dependency check.");
+    }
+  }
+
+  function friendlyError(error) {
+    const msg = error && error.message ? error.message : String(error);
+    if (/worker|dynamically imported/i.test(msg)) {
+      return msg + " The pdf.js worker file is libs/pdf.worker.min.js beside this page.";
+    }
+    return msg;
+  }
+
+  function bindTabs() {
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab, .panel").forEach((node) => node.classList.remove("on"));
+        button.classList.add("on");
+        $(button.dataset.tab).classList.add("on");
+      });
+    });
+  }
+
+  function bindDrop(zone, input, onFiles) {
+    const open = () => input.click();
+    zone.addEventListener("click", open);
+    zone.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    });
+    ["dragenter", "dragover"].forEach((name) => zone.addEventListener(name, (event) => {
+      event.preventDefault();
+      zone.classList.add("over");
+    }));
+    ["dragleave", "drop"].forEach((name) => zone.addEventListener(name, (event) => {
+      event.preventDefault();
+      zone.classList.remove("over");
+    }));
+    zone.addEventListener("drop", (event) => onFiles(event.dataTransfer.files));
+    input.addEventListener("change", () => {
+      const files = [...input.files];
+      input.value = "";
+      if (files.length) onFiles(files);
+    });
+  }
+
+  function showFileInfo(hostId, file, pages) {
+    const host = $(hostId);
+    host.replaceChildren();
+    const row = document.createElement("div");
+    row.className = "file";
+    const name = document.createElement("b");
+    name.textContent = file.name;
+    const meta = document.createElement("span");
+    meta.textContent = pages + (pages === 1 ? " page" : " pages");
+    row.append(name, meta);
+    host.appendChild(row);
+  }
+
+  function closeModal() {
+    $("modal").hidden = true;
+    $("modalBody").replaceChildren();
+    $("modalActions").replaceChildren();
+  }
+
+  function openModal(options) {
+    $("modalTitle").textContent = options.title || "";
+    const body = $("modalBody");
+    body.replaceChildren();
+    if (options.node) body.appendChild(options.node);
+    const actions = $("modalActions");
+    actions.replaceChildren();
+    (options.actions || []).forEach((action) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = action.label;
+      if (action.kind) button.className = action.kind;
+      if (action.primary) button.id = "modalPrimary";
+      button.addEventListener("click", action.onClick);
+      actions.appendChild(button);
+    });
+    $("modal").hidden = false;
+    const focusTarget = options.node && options.node.querySelector("textarea, input, select");
+    if (focusTarget && focusTarget.focus) focusTarget.focus();
+    else {
+      const primary = $("modalPrimary");
+      if (primary) primary.focus();
+    }
+  }
+
+  /* ============================================================
+     PDF module
+     ============================================================ */
+  function download(data, name, type) {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: type || "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = String(name || "download").replace(/[\\/:*?"<>|]/g, "_");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  function ensurePdfName(name) {
+    const clean = (name || "output.pdf").trim() || "output.pdf";
+    return /\.pdf$/i.test(clean) ? clean : clean + ".pdf";
+  }
+
+  function pageNums(spec, max) {
+    if (!spec.trim()) return Array.from({ length: max }, (_, i) => i + 1);
+    const out = [];
+    for (let part of spec.split(",")) {
+      part = part.trim();
+      if (/^\d+$/.test(part)) {
+        const n = +part;
+        if (n < 1 || n > max) throw new Error("Page " + n + " is out of range");
+        out.push(n);
+      } else if (/^\d+\s*-\s*\d+$/.test(part)) {
+        const pair = part.split("-").map(Number);
+        const a = pair[0];
+        const b = pair[1];
+        if (a < 1 || b > max || a > b) throw new Error("Invalid page range " + part);
+        for (let n = a; n <= b; n++) out.push(n);
+      } else throw new Error("Invalid page format " + part);
+    }
+    return [...new Set(out)];
+  }
+
+  function firstPdf(files) {
+    const pdf = [...files].find((file) => /\.pdf$/i.test(file.name) || file.type === "application/pdf");
+    if (!pdf) throw new Error("Choose a PDF file.");
+    return pdf;
+  }
+
+  async function openPdfJs(file) {
+    requireLib("pdf.js");
+    const data = new Uint8Array(await file.arrayBuffer());
+    return pdfjsLib.getDocument({ data }).promise;
+  }
+
+  let splitFile = null;
+  let splitPages = 0;
+
+  function validateSplit() {
+    let ok = !!splitFile && $("groups").children.length > 0;
+    for (const group of $("groups").children) {
+      if (!group.querySelector(".rg").value.trim() || !group.querySelector(".nm").value.trim()) ok = false;
+    }
+    $("splitGo").disabled = !ok;
+  }
+
+  function addSplitGroup() {
+    const row = document.createElement("div");
+    row.className = "group";
+    const pages = document.createElement("input");
+    pages.className = "rg";
+    pages.placeholder = "1-3,5";
+    pages.setAttribute("aria-label", "Page range");
+    const name = document.createElement("input");
+    name.className = "nm";
+    name.value = "split_" + ($("groups").children.length + 1) + ".pdf";
+    name.setAttribute("aria-label", "Output file name");
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", "Remove output");
+    remove.addEventListener("click", () => {
+      row.remove();
+      validateSplit();
+    });
+    pages.addEventListener("input", validateSplit);
+    name.addEventListener("input", validateSplit);
+    row.append(pages, name, remove);
+    $("groups").appendChild(row);
+    validateSplit();
+  }
+
+  async function loadSplitFile(files) {
+    try {
+      requireLib("pdf-lib");
+      splitFile = firstPdf(files);
+      const doc = await PDFLib.PDFDocument.load(await splitFile.arrayBuffer());
+      splitPages = doc.getPageCount();
+      showFileInfo("sInfo", splitFile, splitPages);
+      validateSplit();
+      setStatus("sStatus", "Loaded " + splitPages + " pages.");
+    } catch (error) {
+      setStatus("sStatus", "Could not load PDF: " + friendlyError(error), "error");
+    }
+  }
+
+  async function runSplit() {
+    try {
+      requireLib("pdf-lib");
+      const source = await PDFLib.PDFDocument.load(await splitFile.arrayBuffer());
+      const groups = [...$("groups").children];
+      for (const group of groups) {
+        const doc = await PDFLib.PDFDocument.create();
+        const indexes = pageNums(group.querySelector(".rg").value, splitPages).map((n) => n - 1);
+        const copied = await doc.copyPages(source, indexes);
+        copied.forEach((page) => doc.addPage(page));
+        download(await doc.save(), ensurePdfName(group.querySelector(".nm").value), "application/pdf");
+      }
+      setStatus("sStatus", "Split complete.", "success");
+    } catch (error) {
+      setStatus("sStatus", "Split failed: " + friendlyError(error), "error");
+    }
+  }
+
+  let mergeFiles = [];
+
+  function renderMergeList() {
+    const host = $("mList");
+    host.replaceChildren();
+    mergeFiles.forEach((file, index) => {
+      const row = document.createElement("div");
+      row.className = "file";
+      const name = document.createElement("b");
+      name.textContent = (index + 1) + ". " + file.name;
+      const controls = document.createElement("span");
+      controls.className = "row";
+      const up = document.createElement("button");
+      up.type = "button";
+      up.textContent = "↑";
+      up.disabled = index === 0;
+      up.addEventListener("click", () => {
+        const swap = mergeFiles[index - 1];
+        mergeFiles[index - 1] = mergeFiles[index];
+        mergeFiles[index] = swap;
+        renderMergeList();
+      });
+      const down = document.createElement("button");
+      down.type = "button";
+      down.textContent = "↓";
+      down.disabled = index === mergeFiles.length - 1;
+      down.addEventListener("click", () => {
+        const swap = mergeFiles[index + 1];
+        mergeFiles[index + 1] = mergeFiles[index];
+        mergeFiles[index] = swap;
+        renderMergeList();
+      });
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.addEventListener("click", () => {
+        mergeFiles.splice(index, 1);
+        renderMergeList();
+      });
+      controls.append(up, down, remove);
+      row.append(name, controls);
+      host.appendChild(row);
+    });
+    $("mergeGo").disabled = mergeFiles.length < 2;
+  }
+
+  function addMergeFiles(files) {
+    const pdfs = [...files].filter((file) => /\.pdf$/i.test(file.name) || file.type === "application/pdf");
+    if (!pdfs.length) {
+      setStatus("mStatus", "Choose PDF files.", "error");
+      return;
+    }
+    mergeFiles.push(...pdfs);
+    renderMergeList();
+    setStatus("mStatus", mergeFiles.length + " PDF" + (mergeFiles.length === 1 ? "" : "s") + " ready.");
+  }
+
+  async function runMerge() {
+    try {
+      requireLib("pdf-lib");
+      const doc = await PDFLib.PDFDocument.create();
+      for (let i = 0; i < mergeFiles.length; i++) {
+        setStatus("mStatus", "Merging " + (i + 1) + " / " + mergeFiles.length + "…");
+        const source = await PDFLib.PDFDocument.load(await mergeFiles[i].arrayBuffer());
+        const copied = await doc.copyPages(source, source.getPageIndices());
+        copied.forEach((page) => doc.addPage(page));
+      }
+      download(await doc.save(), ensurePdfName($("mName").value || "merged.pdf"), "application/pdf");
+      setStatus("mStatus", "Merge complete.", "success");
+    } catch (error) {
+      setStatus("mStatus", "Merge failed: " + friendlyError(error), "error");
+    }
+  }
+
+  let convertFile = null;
+  let convertDoc = null;
+
+  async function loadConvertFile(files) {
+    try {
+      convertFile = firstPdf(files);
+      convertDoc = await openPdfJs(convertFile);
+      showFileInfo("cInfo", convertFile, convertDoc.numPages);
+      $("jpgGo").disabled = false;
+      $("excelGo").disabled = false;
+      setStatus("cStatus", "Loaded " + convertDoc.numPages + " pages.");
+    } catch (error) {
+      setStatus("cStatus", "Could not load PDF: " + friendlyError(error), "error");
+    }
+  }
+
+  async function exportJpg() {
+    const button = $("jpgGo");
+    button.disabled = true;
+    try {
+      requireLib("pdf.js");
+      const numbers = pageNums($("cPages").value, convertDoc.numPages);
+      const quality = +$("jpgQ").value;
+      const stem = convertFile.name.replace(/\.pdf$/i, "");
+      for (let i = 0; i < numbers.length; i++) {
+        const n = numbers[i];
+        setStatus("cStatus", "JPG " + (i + 1) + " / " + numbers.length + "…");
+        const page = await convertDoc.getPage(n);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+        download(blob, stem + "_page_" + n + ".jpg", "image/jpeg");
+      }
+      setStatus("cStatus", "JPG export complete.", "success");
+    } catch (error) {
+      setStatus("cStatus", "JPG failed: " + friendlyError(error), "error");
+    } finally {
+      button.disabled = !convertDoc;
+    }
+  }
+
+  /* ============================================================
+     Text editor module
+     Coordinates: x and y are 0–1 from the top-left of the page.
+     The anchor is the centre of the text box. PDF y is flipped on export.
+     ============================================================ */
+  let editFile = null;
+  let editDoc = null;
+  let editPage = 1;
+  let editCount = 0;
+  let viewScale = 1;
+  let renderTask = null;
+  let renderGen = 0;
+  let textObjects = [];
+  let selectedId = null;
+  let idSeq = 0;
+  let drag = null;
+
+  function nextId() {
+    idSeq += 1;
+    return "t" + idSeq;
+  }
+
+  function byId(id) {
+    return textObjects.find((item) => item.id === id) || null;
+  }
+
+  function cssSize(fontSize) {
+    return (fontSize * viewScale) + "px";
+  }
+
+  function textTransform(rotation) {
+    return "translate(-50%, -50%) rotate(" + rotation + "deg)";
+  }
+
+  function currentFormat() {
+    const index = Number($("fontSize").value);
+    const pressed = document.querySelector("#rotCtrl button[aria-pressed='true']");
+    return {
+      fontSize: FONT_SIZES[index] || 16,
+      fontFamily: FONT_FAMILY,
+      color: $("color").value,
+      rotation: pressed ? Number(pressed.dataset.rot) : 0
+    };
+  }
+
+  function highlightRotation(deg) {
+    document.querySelectorAll("#rotCtrl button").forEach((button) => {
+      button.setAttribute("aria-pressed", String(Number(button.dataset.rot) === Number(deg)));
+    });
+  }
+
+  function showFormat(format) {
+    const index = Math.max(0, FONT_SIZES.indexOf(format.fontSize));
+    $("fontSize").value = String(index === -1 ? 4 : index);
+    $("fontSize").setAttribute("aria-valuenow", String(format.fontSize));
+    $("sizeLab").textContent = String(format.fontSize);
+    $("color").value = format.color;
+    highlightRotation(format.rotation);
+  }
+
+  function placeDeleteButton(button, textEl, rotation) {
+    const w = textEl.offsetWidth;
+    const h = textEl.offsetHeight;
+    const rad = (rotation % 360) * Math.PI / 180;
+    const cos = Math.abs(Math.cos(rad));
+    const sin = Math.abs(Math.sin(rad));
+    button.style.left = ((w * cos + h * sin) / 2 + 8) + "px";
+    button.style.top = ((-(w * sin + h * cos) / 2) - 8) + "px";
+  }
+
+  function buildTextNode(obj) {
+    const anchor = document.createElement("div");
+    anchor.className = "text-anchor" + (obj.id === selectedId ? " selected" : "");
+    anchor.dataset.id = obj.id;
+    anchor.style.left = (obj.x * 100) + "%";
+    anchor.style.top = (obj.y * 100) + "%";
+    anchor.style.zIndex = obj.id === selectedId ? "3" : "1";
+
+    const textEl = document.createElement("div");
+    textEl.className = "text-obj" + (obj.id === selectedId ? " selected" : "");
+    textEl.style.fontFamily = obj.fontFamily;
+    textEl.style.fontSize = cssSize(obj.fontSize);
+    textEl.style.color = obj.color;
+    textEl.style.transform = textTransform(obj.rotation);
+
+    const body = document.createElement("span");
+    body.className = "text-body";
+    body.textContent = obj.text;
+    textEl.appendChild(body);
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "text-del";
+    del.textContent = "Delete";
+    anchor.append(textEl, del);
+    return anchor;
+  }
+
+  function renderOverlay() {
+    const layer = $("overlayLayer");
+    layer.replaceChildren();
+    textObjects.filter((item) => item.page === editPage).forEach((obj) => {
+      layer.appendChild(buildTextNode(obj));
+    });
+    layer.querySelectorAll(".text-anchor").forEach((anchor) => {
+      const obj = byId(anchor.dataset.id);
+      placeDeleteButton(anchor.querySelector(".text-del"), anchor.querySelector(".text-obj"), obj.rotation);
+    });
+  }
+
+  function paintObject(obj) {
+    const anchor = $("overlayLayer").querySelector('.text-anchor[data-id="' + obj.id + '"]');
+    if (!anchor || obj.page !== editPage) {
+      renderOverlay();
+      return;
+    }
+    const textEl = anchor.querySelector(".text-obj");
+    anchor.querySelector(".text-body").textContent = obj.text;
+    textEl.style.fontFamily = obj.fontFamily;
+    textEl.style.fontSize = cssSize(obj.fontSize);
+    textEl.style.color = obj.color;
+    textEl.style.transform = textTransform(obj.rotation);
+    anchor.style.left = (obj.x * 100) + "%";
+    anchor.style.top = (obj.y * 100) + "%";
+    placeDeleteButton(anchor.querySelector(".text-del"), textEl, obj.rotation);
+  }
+
+  function refreshList() {
+    const onPage = textObjects.filter((item) => item.page === editPage);
+    const other = textObjects.length - onPage.length;
+    $("objMeta").textContent = onPage.length
+      ? onPage.length + " on this page" + (other ? " · " + other + " on other pages" : "")
+      : (other ? "None on this page · " + other + " on other pages" : "No text yet");
+    const list = $("objList");
+    list.replaceChildren();
+    onPage.forEach((obj) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "obj-item" + (obj.id === selectedId ? " on" : "");
+      button.textContent = obj.text.replace(/\s+/g, " ");
+      button.addEventListener("click", () => selectText(obj.id));
+      list.appendChild(button);
+    });
+  }
+
+  function selectText(id) {
+    selectedId = id;
+    document.querySelectorAll(".text-anchor").forEach((anchor) => {
+      const on = anchor.dataset.id === id;
+      anchor.classList.toggle("selected", on);
+      anchor.style.zIndex = on ? "3" : "1";
+      anchor.querySelector(".text-obj").classList.toggle("selected", on);
+    });
+    refreshList();
+    if (id) {
+      const obj = byId(id);
+      if (obj) showFormat(obj);
+    }
+  }
+
+  async function renderEditPage() {
+    if (!editDoc) return;
+    const gen = ++renderGen;
+    if (renderTask) {
+      try { renderTask.cancel(); } catch (ignore) {}
+      renderTask = null;
+    }
+    const page = await editDoc.getPage(editPage);
+    if (gen !== renderGen) return;
+    const base = page.getViewport({ scale: 1 });
+    const maxW = Math.max(280, $("canvasWrap").clientWidth - 36);
+    viewScale = Math.min(1.6, maxW / base.width);
+    const viewport = page.getViewport({ scale: viewScale });
+    const canvas = $("pdfCanvas");
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    renderTask = page.render({ canvasContext: canvas.getContext("2d"), viewport });
+    try {
+      await renderTask.promise;
+    } catch (error) {
+      if (error && (error.name === "RenderingCancelledException" || /cancel/i.test(error.message || ""))) return;
+      throw error;
+    }
+    if (gen !== renderGen) return;
+    $("pageLab").textContent = "Page " + editPage + " / " + editCount;
+    $("prev").disabled = editPage <= 1;
+    $("next").disabled = editPage >= editCount;
+    renderOverlay();
+    refreshList();
+  }
+
+  async function loadEditFile(files) {
+    try {
+      editFile = firstPdf(files);
+      textObjects = [];
+      selectedId = null;
+      editDoc = await openPdfJs(editFile);
+      editCount = editDoc.numPages;
+      editPage = 1;
+      $("eName").value = editFile.name.replace(/\.pdf$/i, "") + "_text.pdf";
+      $("addText").disabled = false;
+      $("editGo").disabled = false;
+      $("canvasEmpty").hidden = true;
+      $("canvasBox").hidden = false;
+      showFileInfo("eInfo", editFile, editCount);
+      await renderEditPage();
+      setStatus("eStatus", "Loaded " + editCount + " pages.");
+    } catch (error) {
+      setStatus("eStatus", "Could not load PDF: " + friendlyError(error), "error");
+    }
+  }
+
+  function createText(text) {
+    const format = currentFormat();
+    const obj = {
+      id: nextId(),
+      page: editPage,
+      x: 0.5,
+      y: 0.5,
+      text,
+      fontSize: format.fontSize,
+      fontFamily: format.fontFamily,
+      color: format.color,
+      rotation: format.rotation
+    };
+    textObjects.push(obj);
+    selectedId = obj.id;
+    renderOverlay();
+    refreshList();
+    setStatus("eStatus", "Text is at the centre of this page. Drag it where you want it.");
+  }
+
+  function askForText() {
+    if (!editDoc) {
+      setStatus("eStatus", "Load a PDF first.", "error");
+      return;
+    }
+    const area = document.createElement("textarea");
+    area.rows = 4;
+    area.placeholder = "Market Value";
+    const wrap = document.createElement("div");
+    wrap.className = "stack";
+    const label = document.createElement("label");
+    label.className = "field";
+    label.textContent = "Text";
+    label.appendChild(area);
+    wrap.appendChild(label);
+    const submit = () => {
+      if (!area.value.trim()) {
+        area.focus();
+        return;
+      }
+      closeModal();
+      createText(area.value);
+    };
+    area.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        submit();
+      }
+    });
+    openModal({
+      title: "Add Text",
+      node: wrap,
+      actions: [
+        { label: "Cancel", onClick: closeModal },
+        { label: "Add", kind: "primary", primary: true, onClick: submit }
+      ]
+    });
+  }
+
+  function editTextDialog(id) {
+    const obj = byId(id);
+    if (!obj) return;
+    selectText(id);
+    const wrap = document.createElement("div");
+    wrap.className = "stack";
+    const area = document.createElement("textarea");
+    area.rows = 4;
+    area.value = obj.text;
+    const textLabel = document.createElement("label");
+    textLabel.className = "field";
+    textLabel.textContent = "Text";
+    textLabel.appendChild(area);
+    const size = document.createElement("select");
+    FONT_SIZES.forEach((value) => {
+      const option = document.createElement("option");
+      option.value = String(value);
+      option.textContent = String(value);
+      if (value === obj.fontSize) option.selected = true;
+      size.appendChild(option);
+    });
+    const sizeLabel = document.createElement("label");
+    sizeLabel.className = "field";
+    sizeLabel.textContent = "Font size";
+    sizeLabel.appendChild(size);
+    const color = document.createElement("input");
+    color.type = "color";
+    color.value = obj.color;
+    const colorLabel = document.createElement("label");
+    colorLabel.className = "field";
+    colorLabel.textContent = "Text colour";
+    colorLabel.appendChild(color);
+    wrap.append(textLabel, sizeLabel, colorLabel);
+    openModal({
+      title: "Edit Text",
+      node: wrap,
+      actions: [
+        { label: "Cancel", onClick: closeModal },
+        {
+          label: "Apply",
+          kind: "primary",
+          primary: true,
+          onClick: () => {
+            if (!area.value.trim()) {
+              area.focus();
+              return;
+            }
+            obj.text = area.value;
+            obj.fontSize = Number(size.value);
+            obj.color = color.value;
+            closeModal();
+            paintObject(obj);
+            showFormat(obj);
+            refreshList();
+            setStatus("eStatus", "Text updated.");
+          }
+        }
+      ]
+    });
+  }
+
+  function confirmDelete(id) {
+    const obj = byId(id);
+    if (!obj) return;
+    openModal({
+      title: "Delete this text?",
+      actions: [
+        { label: "Cancel", onClick: closeModal },
+        {
+          label: "Delete",
+          kind: "danger",
+          primary: true,
+          onClick: () => {
+            closeModal();
+            textObjects = textObjects.filter((item) => item.id !== id);
+            if (selectedId === id) selectedId = null;
+            renderOverlay();
+            refreshList();
+            setStatus("eStatus", "Text deleted.");
+          }
+        }
+      ]
+    });
+  }
+
+  function onOverlayMouseDown(event) {
+    if (event.button !== 0) return;
+    if (event.target.closest(".text-del")) {
+      event.stopPropagation();
+      return;
+    }
+    const anchor = event.target.closest(".text-anchor");
+    if (!anchor) {
+      selectText(null);
+      return;
+    }
+    event.preventDefault();
+    const obj = byId(anchor.dataset.id);
+    if (!obj) return;
+    selectText(obj.id);
+    drag = {
+      id: obj.id,
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      originX: obj.x,
+      originY: obj.y,
+      moved: false
+    };
+    anchor.querySelector(".text-obj").classList.add("dragging");
+  }
+
+  function onMouseMove(event) {
+    if (!drag) return;
+    const dx = event.clientX - drag.pointerX;
+    const dy = event.clientY - drag.pointerY;
+    if (!drag.moved && Math.hypot(dx, dy) < 3) return;
+    drag.moved = true;
+    event.preventDefault();
+    const rect = $("overlayLayer").getBoundingClientRect();
+    const obj = byId(drag.id);
+    if (!obj || rect.width < 1 || rect.height < 1) return;
+    obj.x = Math.min(1, Math.max(0, drag.originX + dx / rect.width));
+    obj.y = Math.min(1, Math.max(0, drag.originY + dy / rect.height));
+    const anchor = $("overlayLayer").querySelector('.text-anchor[data-id="' + obj.id + '"]');
+    if (!anchor) return;
+    anchor.style.left = (obj.x * 100) + "%";
+    anchor.style.top = (obj.y * 100) + "%";
+  }
+
+  function onMouseUp() {
+    if (!drag) return;
+    const anchor = $("overlayLayer").querySelector('.text-anchor[data-id="' + drag.id + '"]');
+    if (anchor) anchor.querySelector(".text-obj").classList.remove("dragging");
+    drag = null;
+  }
+
+  function normalizeRotation(deg) {
+    return ((Math.round(Number(deg) / 90) * 90) % 360 + 360) % 360;
+  }
+
+  function placedImage(cx, cy, w, h, cssDeg) {
+    const theta = -cssDeg * Math.PI / 180;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    const rx = (w / 2) * cos - (h / 2) * sin;
+    const ry = (w / 2) * sin + (h / 2) * cos;
+    return { x: cx - rx, y: cy - ry, rotate: -cssDeg };
+  }
+
+  let fontBytesPromise = null;
+
+  function bytesFromBase64(b64) {
+    const binary = atob(b64);
+    const out = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+    return out;
+  }
+
+  function loadFontScript() {
+    return new Promise((resolve, reject) => {
+      if (window.PDF_TOOL_FONT_BASE64) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "./fonts/NotoSansTC-Regular.js";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("font file"));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function loadFontBytesOnce() {
+    try {
+      await loadFontScript();
+      if (window.PDF_TOOL_FONT_BASE64) {
+        const bytes = bytesFromBase64(window.PDF_TOOL_FONT_BASE64);
+        window.PDF_TOOL_FONT_BASE64 = "";
+        return bytes;
+      }
+    } catch (ignore) {}
+    try {
+      const response = await fetch("./fonts/NotoSansTC-Regular.ttf");
+      if (response.ok) return new Uint8Array(await response.arrayBuffer());
+    } catch (ignore) {}
+    return null;
+  }
+
+  function loadFontBytes() {
+    if (!fontBytesPromise) fontBytesPromise = loadFontBytesOnce();
+    return fontBytesPromise;
+  }
+
+  function pdfRgb(hex) {
+    let h = String(hex || "#d71920").replace("#", "").trim();
+    if (h.length === 3) h = h.split("").map((ch) => ch + ch).join("");
+    const n = parseInt(h, 16);
+    if (!Number.isFinite(n)) return PDFLib.rgb(0.84, 0.1, 0.13);
+    return PDFLib.rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+  }
+
+  let ascenderRatio = 0;
+
+  function measureAscenderRatio() {
+    if (ascenderRatio) return ascenderRatio;
+    const host = document.createElement("div");
+    host.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;font-size:100px;line-height:1;font-family:" + FONT_FAMILY + ";white-space:pre";
+    const span = document.createElement("span");
+    span.style.cssText = "display:inline-block;line-height:1";
+    span.textContent = "Hg市場";
+    const mark = document.createElement("span");
+    mark.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+    host.append(span, mark);
+    document.body.appendChild(host);
+    const top = span.getBoundingClientRect().top;
+    const baseline = mark.getBoundingClientRect().top - top;
+    host.remove();
+    ascenderRatio = baseline > 0 ? baseline / 100 : 0.8;
+    return ascenderRatio;
+  }
+
+  function drawEmbeddedText(font, page, obj) {
+    const size = obj.fontSize || 16;
+    const lines = String(obj.text).replace(/\r\n/g, "\n").split("\n");
+    const widths = lines.map((line) => font.widthOfTextAtSize(line || " ", size));
+    const width = Math.max(1, ...widths);
+    const height = size * lines.length;
+    const ascender = measureAscenderRatio() * size;
+    const cssDeg = normalizeRotation(obj.rotation);
+    const theta = -cssDeg * Math.PI / 180;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    const cx = obj.x * page.getWidth();
+    const cy = (1 - obj.y) * page.getHeight();
+    const color = pdfRgb(obj.color);
+    lines.forEach((line, index) => {
+      if (!line) return;
+      const lx = -width / 2;
+      const ly = height / 2 - ascender - index * size;
+      page.drawText(line, {
+        x: cx + lx * cos - ly * sin,
+        y: cy + lx * sin + ly * cos,
+        size,
+        font,
+        color,
+        rotate: PDFLib.degrees(-cssDeg)
+      });
+    });
+  }
+
+  /* Compatibility export draws the same font stack used on the overlay. */
+  function renderTextRaster(obj) {
+    const scale = 4;
+    const fontPx = Math.max(1, obj.fontSize * scale);
+    const lines = String(obj.text).replace(/\r\n/g, "\n").split("\n");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { alpha: true });
+    const font = "normal " + fontPx + "px " + obj.fontFamily;
+    ctx.font = font;
+    let maxW = 1;
+    lines.forEach((line) => {
+      const width = ctx.measureText(line || " ").width;
+      if (width > maxW) maxW = width;
+    });
+    const pad = Math.ceil(fontPx * 0.25);
+    canvas.width = Math.ceil(maxW + pad * 2);
+    canvas.height = Math.ceil(fontPx * lines.length + pad * 2);
+    ctx.font = font;
+    ctx.fillStyle = obj.color || "#d71920";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    lines.forEach((line, index) => {
+      ctx.fillText(line, pad, pad + index * fontPx);
+    });
+    return { canvas, widthPt: canvas.width / scale, heightPt: canvas.height / scale };
+  }
+
+  function canvasToPng(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          reject(new Error("Could not encode text"));
+          return;
+        }
+        resolve(new Uint8Array(await blob.arrayBuffer()));
+      }, "image/png");
+    });
+  }
+
+  async function drawRasterObject(doc, page, obj) {
+    const raster = renderTextRaster(obj);
+    const image = await doc.embedPng(await canvasToPng(raster.canvas));
+    const cx = obj.x * page.getWidth();
+    const cy = (1 - obj.y) * page.getHeight();
+    const place = placedImage(cx, cy, raster.widthPt, raster.heightPt, normalizeRotation(obj.rotation));
+    page.drawImage(image, {
+      x: place.x,
+      y: place.y,
+      width: raster.widthPt,
+      height: raster.heightPt,
+      rotate: PDFLib.degrees(place.rotate)
+    });
+  }
+
+  async function exportAnnotatedPdf() {
+    const button = $("editGo");
+    button.disabled = true;
+    try {
+      requireLib("pdf-lib");
+      if (!editFile) throw new Error("Load a PDF first.");
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      if (document.fonts && document.fonts.load) {
+        try { await document.fonts.load("100px " + FONT_FAMILY); } catch (ignore) {}
+      }
+      ascenderRatio = 0;
+      const fontBytes = await loadFontBytes();
+      const doc = await PDFLib.PDFDocument.load(await editFile.arrayBuffer());
+      withFontkit(doc);
+      let embedded = null;
+      if (fontBytes) {
+        try { embedded = await doc.embedFont(fontBytes, { subset: true }); } catch (ignore) { embedded = null; }
+      }
+      let mode = embedded ? "Embedded Font Mode" : "Compatibility Mode";
+      setStatus("eStatus", mode);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      for (const obj of textObjects) {
+        if (obj.page < 1 || obj.page > doc.getPageCount()) {
+          throw new Error("A text object points at a missing page.");
+        }
+        const page = doc.getPage(obj.page - 1);
+        let drew = false;
+        if (embedded) {
+          try {
+            drawEmbeddedText(embedded, page, obj);
+            drew = true;
+          } catch (ignore) {
+            drew = false;
+          }
+        }
+        if (!drew) {
+          await drawRasterObject(doc, page, obj);
+          mode = "Compatibility Mode";
+          setStatus("eStatus", mode);
+        }
+      }
+      download(await doc.save(), ensurePdfName($("eName").value || "annotated.pdf"), "application/pdf");
+      const count = textObjects.length;
+      setStatus("eStatus", mode + "\nExported " + count + (count === 1 ? " text object." : " text objects."), "success");
+    } catch (error) {
+      setStatus("eStatus", "Export failed: " + friendlyError(error), "error");
+    } finally {
+      button.disabled = !editFile;
+    }
+  }
+
+  function bindTextEditor() {
+    $("addText").addEventListener("click", askForText);
+    $("prev").addEventListener("click", async () => {
+      if (editPage <= 1) return;
+      editPage -= 1;
+      selectedId = null;
+      try { await renderEditPage(); } catch (error) { setStatus("eStatus", friendlyError(error), "error"); }
+    });
+    $("next").addEventListener("click", async () => {
+      if (editPage >= editCount) return;
+      editPage += 1;
+      selectedId = null;
+      try { await renderEditPage(); } catch (error) { setStatus("eStatus", friendlyError(error), "error"); }
+    });
+    $("fontSize").addEventListener("input", () => {
+      const size = FONT_SIZES[Number($("fontSize").value)] || 16;
+      $("sizeLab").textContent = String(size);
+      $("fontSize").setAttribute("aria-valuenow", String(size));
+      if (!selectedId) return;
+      const obj = byId(selectedId);
+      if (!obj) return;
+      obj.fontSize = size;
+      paintObject(obj);
+    });
+    $("color").addEventListener("input", () => {
+      if (!selectedId) return;
+      const obj = byId(selectedId);
+      if (!obj) return;
+      obj.color = $("color").value;
+      paintObject(obj);
+    });
+    document.querySelectorAll("#rotCtrl button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const deg = Number(button.dataset.rot);
+        highlightRotation(deg);
+        if (!selectedId) return;
+        const obj = byId(selectedId);
+        if (!obj) return;
+        obj.rotation = deg;
+        paintObject(obj);
+      });
+    });
+    $("editGo").addEventListener("click", exportAnnotatedPdf);
+    $("overlayLayer").addEventListener("mousedown", onOverlayMouseDown);
+    $("overlayLayer").addEventListener("dblclick", (event) => {
+      if (event.target.closest(".text-del")) return;
+      const anchor = event.target.closest(".text-anchor");
+      if (!anchor) return;
+      event.preventDefault();
+      editTextDialog(anchor.dataset.id);
+    });
+    $("overlayLayer").addEventListener("click", (event) => {
+      const button = event.target.closest(".text-del");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const anchor = button.closest(".text-anchor");
+      if (anchor) confirmDelete(anchor.dataset.id);
+    });
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("blur", onMouseUp);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !$("modal").hidden) {
+        closeModal();
+        return;
+      }
+      const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+      if (typing || !$("modal").hidden) return;
+      if ((event.key === "Delete" || event.key === "Backspace") && selectedId && $("edit").classList.contains("on")) {
+        event.preventDefault();
+        confirmDelete(selectedId);
+        return;
+      }
+      if (!selectedId || !$("edit").classList.contains("on")) return;
+      const nudge = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
+      if (!nudge) return;
+      event.preventDefault();
+      const obj = byId(selectedId);
+      if (!obj) return;
+      const step = event.shiftKey ? 0.02 : 0.004;
+      obj.x = Math.min(1, Math.max(0, obj.x + nudge[0] * step));
+      obj.y = Math.min(1, Math.max(0, obj.y + nudge[1] * step));
+      const anchor = $("overlayLayer").querySelector('.text-anchor[data-id="' + obj.id + '"]');
+      if (anchor) {
+        anchor.style.left = (obj.x * 100) + "%";
+        anchor.style.top = (obj.y * 100) + "%";
+      }
+    });
+    let resizeTimer = 0;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (editDoc && $("edit").classList.contains("on")) {
+          renderEditPage().catch((error) => setStatus("eStatus", friendlyError(error), "error"));
+        }
+      }, 150);
+    });
+  }
+
+  /* ============================================================
+     Excel module
+     Valuation reconstruction logic is the V5 implementation.
+     ============================================================ */
+  async function extractWords(pdf, pns, onProgress) {
+      let pages = [];
+      for (let pi = 0; pi < pns.length; pi++) {
+          let n = pns[pi];
+          let p = await pdf.getPage(n),
+              tc = await p.getTextContent(),
+              vp = p.getViewport({
+                  scale: 1
+              }),
+              words = tc.items.map(i => ({
+                  text: i.str.trim(),
+                  x: i.transform[4],
+                  y: i.transform[5],
+                  w: i.width || 0,
+                  h: Math.abs(i.transform[3]) || 10
+              })).filter(i => i.text);
+          pages.push({
+              page: n,
+              width: vp.width,
+              height: vp.height,
+              words
+          })
+          if (onProgress) onProgress(pi + 1, pns.length);
+      }
+      return pages
+  }
+
+  function rowsFromWords(pg) {
+      let ws = [...pg.words].sort((a, b) => b.y - a.y || a.x - b.x),
+          rows = [];
+      for (let w of ws) {
+          let tol = Math.max(2.2, w.h * .38),
+              r = rows.find(q => Math.abs(q.y - w.y) <= tol);
+          if (!r) {
+              r = {
+                  y: w.y,
+                  words: []
+              };
+              rows.push(r)
+          }
+          r.words.push(w)
+      }
+      rows.sort((a, b) => b.y - a.y);
+      rows.forEach(r => r.words.sort((a, b) => a.x - b.x));
+      return rows
+  }
+
+  function mergePhrases(row) {
+      let out = [],
+          cur = null;
+      for (let w of row.words) {
+          if (!cur) {
+              cur = {
+                  text: w.text,
+                  x: w.x,
+                  w: w.w || w.text.length * 5
+              };
+              continue
+          }
+          let gap = w.x - (cur.x + cur.w),
+              font = Math.max(7, w.h),
+              join = gap <= Math.max(5, font * .72);
+          if (join) {
+              cur.text += (/^[,.;:%)\]]/.test(w.text) ? '' : ' ') + w.text;
+              cur.w = Math.max(cur.w, (w.x + (w.w || w.text.length * 5)) - cur.x)
+          } else {
+              out.push(cur);
+              cur = {
+                  text: w.text,
+                  x: w.x,
+                  w: w.w || w.text.length * 5
+              }
+          }
+      }
+      if (cur) out.push(cur);
+      return out
+  }
+
+  function parseVal(s) {
+      let t = s.trim(),
+          clean = t.replace(/,/g, '').replace(/^HK\$|^\$/i, '');
+      if (/^\(?-?\d+(\.\d+)?%\)?$/.test(clean)) return {
+          v: parseFloat(clean) / 100,
+          z: '0.00%'
+      };
+      if (/^\(?-?\d+(\.\d+)?\)?$/.test(clean)) {
+          let neg = /^\(/.test(clean),
+              v = parseFloat(clean.replace(/[()]/g, ''));
+          return {
+              v: neg ? -v : v,
+              z: '#,##0.00'
+          }
+      }
+      if (/^(HK\$|\$)\s*[\d,]+(\.\d+)?$/i.test(t)) return {
+          v: parseFloat(clean),
+          z: '$#,##0.00'
+      };
+      return {
+          v: t
+      }
+  }
+
+  function clusterAnchors(all, width) {
+      let xs = [];
+      for (let p of all)
+          for (let r of rowsFromWords(p))
+              for (let q of mergePhrases(r)) xs.push(q.x / width);
+      xs.sort((a, b) => a - b);
+      let clusters = [];
+      for (let x of xs) {
+          let c = clusters.find(q => Math.abs(q.x - x) < .022);
+          if (c) {
+              c.a.push(x);
+              c.x = c.a.reduce((s, v) => s + v, 0) / c.a.length
+          } else clusters.push({
+              x,
+              a: [x]
+          })
+      }
+      clusters = clusters.filter(c => c.a.length >= 2 || c.x < .18);
+      clusters.sort((a, b) => a.x - b.x);
+      let ded = [];
+      for (let c of clusters)
+          if (!ded.length || c.x - ded[ded.length - 1].x > .035) ded.push(c);
+          else if (c.a.length > ded[ded.length - 1].a.length) ded[ded.length - 1] = c;
+      return ded.slice(0, 14)
+  }
+
+  function smartSheetData(pages, mode) {
+      let width = Math.max(...pages.map(p => p.width)),
+          anchors = clusterAnchors(pages, width);
+      if (anchors.length < 3) anchors = [.04, .18, .32, .45, .58, .7, .82, .93].map(x => ({
+          x
+      }));
+      let aoa = [],
+          types = [],
+          pageBreakRows = [];
+      for (let pg of pages) {
+          aoa.push([`Page ${pg.page}`]);
+          types.push([{
+              v: `Page ${pg.page}`,
+              heading: true
+          }]);
+          let rows = rowsFromWords(pg);
+          for (let r of rows) {
+              let ps = mode === 'raw' ? r.words.map(w => ({
+                      text: w.text,
+                      x: w.x,
+                      w: w.w
+                  })) : mergePhrases(r),
+                  vals = Array(anchors.length).fill(''),
+                  meta = Array(anchors.length).fill(null);
+              for (let q of ps) {
+                  let nx = q.x / pg.width,
+                      ci = 0,
+                      best = 9;
+                  anchors.forEach((a, i) => {
+                      let d = Math.abs(nx - a.x);
+                      if (d < best) {
+                          best = d;
+                          ci = i
+                      }
+                  });
+                  let pv = parseVal(q.text);
+                  if (vals[ci] !== '' && mode === 'table') {
+                      ci = Math.min(ci + 1, anchors.length - 1)
+                  }
+                  vals[ci] = vals[ci] === '' ? pv.v : String(vals[ci]) + ' ' + q.text;
+                  meta[ci] = pv
+              }
+              if (vals.some(v => v !== '')) {
+                  aoa.push(vals);
+                  types.push(meta)
+              }
+          }
+          aoa.push([]);
+          types.push([]);
+          pageBreakRows.push(aoa.length)
+      }
+      return {
+          aoa,
+          types,
+          anchors
+      }
+  }
+
+  function styleSmart(ws, data) {
+      let range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+      for (let r = range.s.r; r <= range.e.r; r++) {
+          for (let c = range.s.c; c <= range.e.c; c++) {
+              let cell = ws[XLSX.utils.encode_cell({
+                  r,
+                  c
+              })];
+              if (!cell) continue;
+              let m = data.types[r] && data.types[r][c];
+              if (m && typeof m.v === 'number') {
+                  cell.t = 'n';
+                  cell.z = m.z || '#,##0.00'
+              }
+              if (m && m.heading) {
+                  cell.s = {
+                      font: {
+                          bold: true,
+                          color: {
+                              rgb: 'FFFFFF'
+                          }
+                      },
+                      fill: {
+                          fgColor: {
+                              rgb: '1F4E78'
+                          }
+                      },
+                      alignment: {
+                          horizontal: 'left'
+                      }
+                  }
+              }
+          }
+      }
+      let widths = [];
+      for (let c = 0; c <= range.e.c; c++) {
+          let max = 6;
+          for (let r = 0; r <= range.e.r; r++) {
+              let cell = ws[XLSX.utils.encode_cell({
+                  r,
+                  c
+              })];
+              if (cell && cell.v != null) max = Math.max(max, Math.min(45, String(cell.v).length + 2))
+          }
+          widths.push({
+              wch: max
+          })
+      }
+      ws['!cols'] = widths;
+      ws['!rows'] = Array(range.e.r + 1).fill(null).map(() => ({
+          hpt: 18
+      }))
+  }
+
+  const V5_SECTIONS = {
+      particulars: /^(Site Particulars|Town Planning Restrictions|Land Lease Restrictions|Building \(Planning\) Regulations Restrictions|Proposed Development)$/i,
+      schedule: /^Proposed Development Schedule$/i,
+      valuation: /^Residual Valuation$/i,
+      costs: /^Development Costs$/i,
+      notes: /^Notes$/i
+  };
+
+  function v5Section(t) {
+      t = t.trim();
+      for (const [k, re] of Object.entries(V5_SECTIONS))
+          if (re.test(t)) return k;
+      return null;
+  }
+
+  function v5Num(t) {
+      let s = t.trim(),
+          at = /^@\s*/.test(s),
+          currency = /\$/.test(s),
+          percent = /%/.test(s),
+          unit = (s.match(/(sq\.m\.|sq\.ft\.|\/sq\.m\.|\/sq\.ft\.|years?|m|ft\.)(?:\s*\([^)]*\))?/i) || [])[0] || '',
+          op = (s.match(/\b(x|x\)|divided by)\b/i) || [])[0] || '';
+      let m = s.replace(/@|\$|HK\$|,/gi, '').match(/\(?-?\d+(?:\.\d+)?\)?/);
+      if (!m) return null;
+      let v = parseFloat(m[0].replace(/[()]/g, ''));
+      if (/^\(/.test(m[0])) v = -v;
+      if (percent) v /= 100;
+      return {
+          v,
+          kind: percent ? 'percent' : currency ? 'currency' : 'number',
+          z: percent ? '0.00%' : currency ? '$#,##0' : '#,##0.00',
+          unit,
+          op,
+          at
+      };
+  }
+
+  function v5PhraseRows(pg) {
+      return rowsFromWords(pg).map(r => ({
+          y: r.y,
+          p: mergePhrases(r),
+          text: mergePhrases(r).map(x => x.text).join(' ').trim()
+      })).filter(r => r.text);
+  }
+
+  function v5BaseRow() {
+      return Array(9).fill('')
+  }
+
+  function v5Meta() {
+      return Array(9).fill(null)
+  }
+
+  function v5Push(out, vals, meta) {
+      out.aoa.push(vals);
+      out.types.push(meta || v5Meta())
+  }
+
+  function v5Blank(out) {
+      if (out.aoa.length && out.aoa[out.aoa.length - 1].some(v => v !== '')) v5Push(out, v5BaseRow(), v5Meta())
+  }
+
+  function v5Heading(out, text, part) {
+      v5Blank(out);
+      let r = out.aoa.length,
+          v = v5BaseRow(),
+          m = v5Meta();
+      v[1] = text;
+      m[1] = {
+          kind: 'heading'
+      };
+      if (part) {
+          v[8] = part;
+          m[8] = {
+              kind: 'part'
+          }
+      }
+      v5Push(out, v, m);
+      out.merges.push({
+          s: {
+              r,
+              c: 1
+          },
+          e: {
+              r,
+              c: part ? 7 : 8
+          }
+      })
+  }
+
+  function v5ColonRow(out, row) {
+      let ps = row.p,
+          ci = ps.findIndex(x => x.text.trim() === ':');
+      if (ci < 1) return false;
+      let v = v5BaseRow(),
+          m = v5Meta(),
+          label = ps.slice(0, ci).map(x => x.text).join(' '),
+          right = ps.slice(ci + 1).map(x => x.text).join(' ');
+      v[1] = label;
+      m[1] = {
+          kind: 'label'
+      };
+      v[3] = ':';
+      m[3] = {
+          kind: 'colon'
+      };
+      let n = v5Num(right);
+      if (n) {
+          v[4] = n.v;
+          m[4] = n;
+          let tail = right.replace(/.*?\(?-?[\d,]+(?:\.\d+)?\)?\s*%?/, '').trim();
+          if (tail) {
+              v[5] = tail;
+              m[5] = {
+                  kind: 'remark'
+              }
+          }
+      } else {
+          v[4] = right;
+          m[4] = {
+              kind: 'text'
+          }
+      }
+      v5Push(out, v, m);
+      return true
+  }
+
+  function v5ScheduleRow(out, row) {
+      let t = row.text,
+          v = v5BaseRow(),
+          m = v5Meta();
+      if (/Floor.*Height.*Plot Ratio.*Accountable/i.test(t)) {
+          v[1] = 'Floor';
+          v[2] = 'Description';
+          v[4] = 'Height (m)';
+          v[5] = 'Plot Ratio';
+          v[6] = 'Accountable GFA';
+          v[7] = 'Non-Accountable GFA';
+          v[8] = 'SA (sq.m.)';
+          m = m.map(() => ({
+              kind: 'tablehead'
+          }));
+          v5Push(out, v, m);
+          return
+      }
+      for (let q of row.p) {
+          let nx = q.x / out.pageWidth,
+              idx = nx < .15 ? 1 : nx < .43 ? 2 : nx < .54 ? 4 : nx < .65 ? 5 : nx < .76 ? 6 : nx < .88 ? 7 : 8,
+              n = v5Num(q.text);
+          if (v[idx] !== '' && idx === 1) {
+              idx = 2
+          }
+          v[idx] = n ? n.v : q.text;
+          m[idx] = n || {
+              kind: 'text'
+          }
+      }
+      v5Push(out, v, m)
+  }
+
+  function v5ValuationRow(out, row, section) {
+      let t = row.text,
+          v = v5BaseRow(),
+          m = v5Meta();
+      let note = t.match(/^[-–]?\s*([12])\s+(.+)/);
+      if (note) {
+          t = note[2] + ' (' + note[1] + ')';
+          row = {
+              ...row,
+              text: t,
+              p: [{
+                  text: t,
+                  x: row.p[0].x,
+                  w: 0
+              }]
+          }
+      }
+      for (let q of row.p) {
+          let nx = q.x / out.pageWidth,
+              idx = nx < .18 ? 1 : nx < .34 ? 2 : nx < .48 ? 3 : nx < .61 ? 4 : nx < .72 ? 5 : nx < .82 ? 6 : nx < .91 ? 7 : 8,
+              n = v5Num(q.text);
+          if (n) {
+              v[idx] = n.v;
+              m[idx] = n;
+              if (n.unit && idx < 8 && v[idx + 1] === '') {
+                  v[idx + 1] = n.unit;
+                  m[idx + 1] = {
+                      kind: 'unit'
+                  }
+              }
+              if (n.op && idx < 8 && v[idx + 1] === '') {
+                  v[idx + 1] = n.op;
+                  m[idx + 1] = {
+                      kind: 'operator'
+                  }
+              }
+          } else {
+              if (v[idx] !== '' && idx < 8) idx++;
+              v[idx] = q.text;
+              m[idx] = {
+                  kind: 'text'
+              }
+          }
+      }
+      v5Push(out, v, m)
+  }
+
+  function v5NotesRow(out, row) {
+      let v = v5BaseRow(),
+          m = v5Meta();
+      v[1] = row.text;
+      m[1] = {
+          kind: 'note'
+      };
+      v5Push(out, v, m)
+  }
+
+  function valuationV5Data(pages) {
+      let out = {
+              aoa: [],
+              types: [],
+              merges: [],
+              valuation5: true,
+              pageWidth: pages[0]?.width || 842
+          },
+          sec = 'particulars';
+      for (let pg of pages) {
+          out.pageWidth = pg.width;
+          for (let row of v5PhraseRows(pg)) {
+              let part = (row.text.match(/Part\s+\d+\s+of\s+\d+/i) || [])[0] || '',
+                  clean = row.text.replace(/Part\s+\d+\s+of\s+\d+/i, '').trim(),
+                  det = v5Section(clean);
+              if (det) {
+                  sec = det;
+                  v5Heading(out, clean, part);
+                  continue
+              }
+              if (/^Page\s+\d+$/i.test(clean)) continue;
+              if (sec === 'particulars') {
+                  if (!v5ColonRow(out, row)) {
+                      let v = v5BaseRow(),
+                          m = v5Meta();
+                      v[1] = clean;
+                      m[1] = {
+                          kind: 'text'
+                      };
+                      v5Push(out, v, m)
+                  }
+              } else if (sec === 'schedule') v5ScheduleRow(out, row);
+              else if (sec === 'notes') v5NotesRow(out, row);
+              else v5ValuationRow(out, row, sec)
+          }
+          v5Blank(out)
+      }
+      while (out.aoa.length && !out.aoa[out.aoa.length - 1].some(v => v !== '')) {
+          out.aoa.pop();
+          out.types.pop()
+      }
+      return out
+  }
+
+  function styleV5(ws, d) {
+      ws['!cols'] = [{
+          wch: 1
+      }, {
+          wch: 15
+      }, {
+          wch: 39.3
+      }, {
+          wch: 8.4
+      }, {
+          wch: 29.1
+      }, {
+          wch: 20.6
+      }, {
+          wch: 32
+      }, {
+          wch: 26.3
+      }, {
+          wch: 23.7
+      }];
+      ws['!rows'] = d.aoa.map((row) => ({
+          hpt: row.some(v => typeof v === 'string' && v.length > 80) ? 45 : row.some(v => typeof v === 'string' && v.length > 48) ? 32 : 19
+      }));
+      ws['!merges'] = d.merges || [];
+      let rg = XLSX.utils.decode_range(ws['!ref'] || 'A1:I1');
+      for (let r = 0; r <= rg.e.r; r++)
+          for (let c = 0; c <= rg.e.c; c++) {
+              let cell = ws[XLSX.utils.encode_cell({
+                      r,
+                      c
+                  })],
+                  m = d.types[r] && d.types[r][c];
+              if (!cell || !m) continue;
+              let al = {
+                  vertical: 'center',
+                  wrapText: true,
+                  horizontal: 'left'
+              };
+              if (['number', 'currency', 'percent'].includes(m.kind)) {
+                  cell.t = 'n';
+                  cell.z = m.z;
+                  al.horizontal = 'right'
+              }
+              if (m.kind === 'colon') al.horizontal = 'center';
+              if (m.kind === 'part') al.horizontal = 'right';
+              cell.s = {
+                  alignment: al
+              };
+              if (m.kind === 'heading') cell.s = {
+                  font: {
+                      bold: true,
+                      color: {
+                          rgb: 'FFFFFF'
+                      }
+                  },
+                  fill: {
+                      patternType: 'solid',
+                      fgColor: {
+                          rgb: '1F4E78'
+                      }
+                  },
+                  alignment: {
+                      vertical: 'center',
+                      horizontal: 'left'
+                  }
+              };
+              if (m.kind === 'tablehead') cell.s = {
+                  font: {
+                      bold: true
+                  },
+                  fill: {
+                      patternType: 'solid',
+                      fgColor: {
+                          rgb: 'D9EAF7'
+                      }
+                  },
+                  alignment: {
+                      vertical: 'center',
+                      horizontal: 'center',
+                      wrapText: true
+                  }
+              };
+              if (m.kind === 'note') cell.s = {
+                  alignment: {
+                      vertical: 'top',
+                      horizontal: 'left',
+                      wrapText: true
+                  }
+              }
+          }
+  }
+
+  async function exportExcel() {
+    const button = $("excelGo");
+    button.disabled = true;
+    try {
+      requireLib("pdf.js");
+      requireLib("xlsx");
+      const mode = $("excelMode").value;
+      const numbers = pageNums($("cPages").value, convertDoc.numPages);
+      const pages = await extractWords(convertDoc, numbers, (done, total) => {
+        setStatus("cStatus", "Reading page " + done + " / " + total + "…");
+      });
+      const data = mode === "valuation5" ? valuationV5Data(pages) : smartSheetData(pages, mode);
+      const sheet = XLSX.utils.aoa_to_sheet(data.aoa);
+      const book = XLSX.utils.book_new();
+      if (mode === "valuation5") styleV5(sheet, data);
+      else styleSmart(sheet, data);
+      const sheetName = mode === "valuation5" ? "Valuation V5" : mode === "smart" ? "Smart Layout" : mode === "table" ? "Table" : "Raw";
+      XLSX.utils.book_append_sheet(book, sheet, sheetName);
+      XLSX.writeFile(book, convertFile.name.replace(/\.pdf$/i, "") + "_" + mode + ".xlsx");
+      setStatus("cStatus", mode === "valuation5"
+        ? "Excel valuation reconstruction complete."
+        : "Excel " + mode + " complete. " + data.anchors.length + " logical columns detected.", "success");
+    } catch (error) {
+      setStatus("cStatus", "Excel failed: " + friendlyError(error), "error");
+    } finally {
+      button.disabled = !convertDoc;
+    }
+  }
+
+  async function init() {
+    if (window.pdfjsLib && window.PDF_TOOL_LIBS && window.PDF_TOOL_LIBS.pdfWorker) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = window.PDF_TOOL_LIBS.pdfWorker;
+    }
+    bindTabs();
+    bindDrop($("sDrop"), $("sIn"), (files) => { loadSplitFile(files); });
+    $("addG").addEventListener("click", addSplitGroup);
+    addSplitGroup();
+    $("splitGo").addEventListener("click", runSplit);
+    bindDrop($("mDrop"), $("mIn"), addMergeFiles);
+    $("mClear").addEventListener("click", () => {
+      mergeFiles = [];
+      renderMergeList();
+      setStatus("mStatus", "Waiting for PDFs.");
+    });
+    $("mergeGo").addEventListener("click", runMerge);
+    bindDrop($("eDrop"), $("eIn"), (files) => { loadEditFile(files); });
+    bindTextEditor();
+    bindDrop($("cDrop"), $("cIn"), (files) => { loadConvertFile(files); });
+    $("jpgGo").addEventListener("click", exportJpg);
+    $("excelGo").addEventListener("click", exportExcel);
+    $("diagBtn").addEventListener("click", () => { runDiagnostics(); });
+    await refreshOfflineStatus();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
